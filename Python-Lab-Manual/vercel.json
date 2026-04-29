@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/python_lab_manual.html"
+      "destination": "/index.html"
     }
   ]
 }
