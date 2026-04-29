@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Practical File – Inayat HUssain | Gulzar Group of Institutions</title>
+<meta name="description" content="Python Programming Lab Practical File (VAC26601) – Inayat HUssain, B.Tech CSE Data Science, Gulzar Group of Institutions, Semester 6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@300;400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════
+   ROOT TOKENS  —  ACADEMIC DARK PALETTE
+═══════════════════════════════════════════════════ */
+:root {
+  --paper:      #f5f0e8;
+  --paper-dark: #ede7d9;
+  --paper-line: #c8bea8;
+  --paper-ruled:#d4ccbb;
+  --ink:        #1a1410;
+  --ink-faded:  #4a3f30;
+  --ink-light:  #7a6e5f;
+  --ink-blue:   #1a2744;
+  --cover-bg:   #0d1525;
+  --cover-mid:  #12213a;
+  --cover-line: #1c3460;
+  --gold:       #c9a84c;
+  --gold-light: #e8c96f;
+  --red-seal:   #8b1a1a;
+  --green-ink:  #1a4a2a;
+  --terminal:   #0a1a0f;
+  --term-green: #39ff84;
+  --term-dim:   #a3c9a8;
+  --code-bg:    #0d1117;
+  --kw:         #ff7b72;
+  --fn:         #d2a8ff;
+  --str:        #a5d6ff;
+  --num:        #f8c555;
+  --cmt:        #768390;
+  --op:         #ff7b72;
+  --bi:         #79c0ff;
+
+  --book-w:     860px;
+  --page-r:     8px;
+  --shadow-book: 0 40px 100px rgba(0,0,0,.55), 0 8px 25px rgba(0,0,0,.35);
+}
+
+/* ═══ RESET ═══ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: #1a1208;
+  font-family: 'EB Garamond', Georgia, serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ════════════════════════════════════════════════
+   NOTEBOOK SHELL / DESK SURFACE
+════════════════════════════════════════════════ */
+#desk {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 60%, #2a1f0e 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 80% 30%, #1a1000 0%, transparent 60%),
+    #151005;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 40px;
+  gap: 0;
+}
+
+/* ════════════════════════════════════════════════
+   BOOK WRAPPER (3-D perspective container)
+════════════════════════════════════════════════ */
+#book-wrap {
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
+  width: 100%;
+  max-width: var(--book-w);
+  position: relative;
+}
+
+/* ════════════════════════════════════════════════
+   BOOK (the actual flippable object)
+════════════════════════════════════════════════ */
+#book {
+  width: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* ════════════════════════════════════════════════
+   PAGE SYSTEM
+════════════════════════════════════════════════ */
+.page {
+  width: 100%;
+  height: 780px;
+  background: var(--paper);
+  border-radius: var(--page-r);
+  box-shadow: var(--shadow-book);
+  position: relative;
+  overflow: hidden;
+  display: none;          /* hidden by default */
+  flex-direction: column;
+  transition: opacity .4s ease, transform .4s ease;
+}
+.page.active { display: flex; }
+
+/* Paper texture via repeating lines */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      var(--paper-line) 28px
+    );
+  pointer-events: none;
+  z-index: 0;
+  opacity: .45;
+}
+
+/* Margin red line */
+.page::after {
+  content: '';
+  position: absolute;
+  left: 72px;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: rgba(180,40,40,.22);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Left hole punches */
+.page-holes {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 80px 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.hole {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #1a1208;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
+}
+
+/* ── Page number ── */
+.page-num {
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem;
+  color: var(--ink-light);
+  z-index: 5;
+  letter-spacing: .05em;
+}
+.page-num-left {
+  position: absolute;
+  bottom: 20px;
+  left: 88px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem;
+  color: var(--ink-light);
+  z-index: 5;
+}
+
+/* Page corner fold */
+.corner-fold {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 40px; height: 40px;
+  background: linear-gradient(225deg, var(--paper-dark) 50%, transparent 50%);
+  filter: drop-shadow(-3px -3px 4px rgba(0,0,0,.15));
+  cursor: pointer;
+  transition: width .25s, height .25s;
+  z-index: 10;
+}
+.corner-fold:hover { width: 60px; height: 60px; }
+
+.page-content {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  padding: 40px 40px 30px 80px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.page-content::-webkit-scrollbar { width: 5px; }
+.page-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 4px; }
+.page-content::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.15); }
+
+/* ════════════════════════════════════════════════
+   NAVIGATION BAR (above book)
+════════════════════════════════════════════════ */
+#nav-bar {
+  width: 100%;
+  max-width: var(--book-w);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.nav-btn {
+  background: rgba(201,168,76,.12);
+  border: 1px solid rgba(201,168,76,.3);
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem;
+  letter-spacing: .1em;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.nav-btn:hover {
+  background: rgba(201,168,76,.22);
+  border-color: rgba(201,168,76,.6);
+  transform: translateY(-2px);
+}
+.nav-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#page-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem;
+  color: rgba(201,168,76,.6);
+  letter-spacing: .12em;
+}
+
+/* ════════════════════════════════════════════════
+   TABLE OF CONTENTS NAV (below book)
+════════════════════════════════════════════════ */
+#toc-nav {
+  width: 100%;
+  max-width: var(--book-w);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 28px;
+  justify-content: center;
+}
+.toc-pill {
+  background: rgba(26,36,64,.6);
+  border: 1px solid rgba(201,168,76,.2);
+  color: rgba(201,168,76,.7);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem;
+  padding: 5px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+  letter-spacing: .06em;
+}
+.toc-pill:hover, .toc-pill.active {
+  background: rgba(201,168,76,.18);
+  border-color: rgba(201,168,76,.6);
+  color: var(--gold);
+}
+
+/* ════════════════════════════════════════════════
+   PAGE SLIDE ANIMATION
+════════════════════════════════════════════════ */
+@keyframes slideOutNext {
+  0%   { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-40px); }
+}
+@keyframes slideInNext {
+  0%   { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOutPrev {
+  0%   { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(40px); }
+}
+@keyframes slideInPrev {
+  0%   { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.slide-out     { animation: slideOutNext .35s ease-in-out forwards; z-index: 100; }
+.slide-in      { animation: slideInNext  .35s ease-in-out forwards; z-index: 101; }
+.slide-out-rev { animation: slideOutPrev .35s ease-in-out forwards; z-index: 100; }
+.slide-in-rev  { animation: slideInPrev  .35s ease-in-out forwards; z-index: 101; }
+
+
+/* ════════════════════════════════════════════════
+   FRONT COVER  (page 0)
+════════════════════════════════════════════════ */
+#page-cover {
+  background: var(--cover-bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 30%, #16305a 0%, transparent 65%),
+    radial-gradient(ellipse 40% 60% at 80% 80%, #0a1f40 0%, transparent 55%);
+}
+#page-cover::before { display:none; }   /* no ruled lines */
+#page-cover::after  { display:none; }   /* no margin line */
+
+.cover-border {
+  position: absolute;
+  inset: 18px;
+  border: 2px solid rgba(201,168,76,.25);
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 2;
+}
+.cover-border-inner {
+  position: absolute;
+  inset: 26px;
+  border: 1px solid rgba(201,168,76,.12);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cover-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  z-index: 1;
+  animation: gridShift 30s linear infinite;
+}
+@keyframes gridShift {
+  from { background-position: 0 0; }
+  to   { background-position: 36px 36px; }
+}
+
+.cover-body {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  text-align: center;
+  gap: 0;
+}
+
+.cover-emblem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: 28px;
+  animation: fadeUp .8s .2s ease both;
+}
+
+.cover-crest {
+  width: 80px; height: 80px;
+  border: 2px solid rgba(201,168,76,.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin-bottom: 32px;
+  background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+  animation: fadeUp .8s .3s ease both;
+  box-shadow: 0 0 40px rgba(201,168,76,.08), inset 0 0 20px rgba(201,168,76,.05);
+}
+
+.cover-institution {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+  animation: fadeUp .8s .35s ease both;
+  text-shadow: 0 0 30px rgba(201,168,76,.3);
+}
+.cover-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+  color: rgba(201,168,76,.45);
+  letter-spacing: .1em;
+  margin-bottom: 48px;
+  animation: fadeUp .8s .4s ease both;
+}
+
+.cover-divider {
+  width: 200px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,.4), transparent);
+  margin-bottom: 48px;
+  animation: fadeUp .8s .45s ease both;
+}
+
+.cover-title-main {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  line-height: .95;
+  letter-spacing: -.01em;
+  text-shadow:
+    0 0 60px rgba(201,168,76,.2),
+    0 2px 0 rgba(0,0,0,.4);
+  margin-bottom: 8px;
+  animation: fadeUp .8s .5s ease both;
+}
+.cover-title-sub {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  color: var(--gold);
+  opacity: .8;
+  letter-spacing: .06em;
+  margin-bottom: 52px;
+  animation: fadeUp .8s .6s ease both;
+}
+
+.cover-meta-row {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeUp .8s .7s ease both;
+  margin-bottom: 56px;
+}
+.cover-meta-item {
+  text-align: center;
+}
+.cover-meta-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(201,168,76,.4);
+  margin-bottom: 4px;
+}
+.cover-meta-value {
+  font-family: 'EB Garamond', serif;
+  font-size: .95rem;
+  color: rgba(255,255,255,.75);
+  font-weight: 500;
+}
+
+.cover-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1px solid rgba(201,168,76,.5);
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .8rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 14px 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .25s, border-color .25s, box-shadow .25s, transform .2s;
+  animation: fadeUp .8s .85s ease both;
+}
+.cover-open-btn:hover {
+  background: rgba(201,168,76,.1);
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(201,168,76,.15);
+  transform: translateY(-3px);
+}
+
+.cover-open-btn svg { width:16px; height:16px; }
+
+/* Parallax orbs on cover */
+.cover-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+  animation: orbFloat 10s ease-in-out infinite alternate;
+  z-index: 1;
+}
+.cover-orb1 { width:350px;height:350px; background:rgba(26,55,100,.45); top:-80px;left:-80px; }
+.cover-orb2 { width:250px;height:250px; background:rgba(201,168,76,.06); bottom:-50px;right:-40px; animation-delay:4s; }
+
+@keyframes orbFloat {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(20px,20px) scale(1.08); }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════
+   NAME PAGE  (page 1)
+════════════════════════════════════════════════ */
+.name-page-header {
+  text-align: center;
+  margin-bottom: 36px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--ink-blue);
+}
+.name-page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink-blue);
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.name-page-header small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem;
+  color: var(--ink-light);
+  letter-spacing: .1em;
+}
+
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.record-table tr td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--paper-ruled);
+  font-family: 'EB Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+  vertical-align: middle;
+}
+.record-table tr td:first-child {
+  font-weight: 600;
+  color: var(--ink-blue);
+  width: 200px;
+  font-size: .92rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-family: 'Crimson Pro', serif;
+}
+.record-table tr:last-child td { border-bottom: none; }
+.record-table tr:hover td { background: rgba(26,39,68,.04); }
+
+.record-value-large {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink-blue);
+}
+
+.seal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid var(--paper-ruled);
+}
+.seal-block { text-align: center; }
+.seal-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .65rem;
+  color: var(--ink-light);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.seal-line {
+  width: 150px;
+  height: 1px;
+  background: var(--ink-faded);
+  margin: 0 auto 8px;
+}
+
+/* ════════════════════════════════════════════════
+   INDEX PAGE  (page 2)
+════════════════════════════════════════════════ */
+.page-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ink-blue);
+  border-bottom: 2px solid var(--ink-blue);
+  padding-bottom: 10px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.page-heading small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem;
+  color: var(--ink-light);
+  letter-spacing: .1em;
+}
+
+.index-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'EB Garamond', serif;
+  font-size: .98rem;
+}
+.index-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--ink-blue);
+  font-family: 'Crimson Pro', serif;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink-blue);
+  font-weight: 600;
+}
+.index-table tbody tr {
+  border-bottom: 1px solid var(--paper-line);
+  cursor: pointer;
+  transition: background .15s;
+}
+.index-table tbody tr:hover { background: rgba(26,39,68,.06); }
+.index-table tbody td { padding: 9px 12px; color: var(--ink); }
+.index-table tbody td:first-child {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+  color: var(--ink-light);
+  width: 60px;
+}
+.index-table tbody td:last-child {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem;
+  color: var(--ink-light);
+  width: 60px;
+}
+.exp-link { color: var(--ink-blue); text-decoration: underline; text-decoration-style: dotted; }
+
+/* ════════════════════════════════════════════════
+   PYTHON OVERVIEW PAGE  (page 3)
+════════════════════════════════════════════════ */
+.overview-section { margin-bottom: 24px; }
+.overview-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink-blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.overview-section h3::after {
+  content: '';
+  flex:1; height:1px;
+  background: var(--paper-line);
+}
+.overview-section p, .overview-section li {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.02rem;
+  color: var(--ink);
+  line-height: 1.75;
+  text-align: justify;
+}
+.overview-section ul { padding-left: 22px; }
+.overview-section li { margin-bottom: 4px; }
+.overview-section li::marker { color: var(--ink-blue); }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.feature-chip {
+  background: rgba(26,39,68,.07);
+  border: 1px solid rgba(26,39,68,.15);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'EB Garamond', serif;
+  font-size: .95rem;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feature-chip::before {
+  content: '»';
+  color: var(--ink-blue);
+  font-weight: 700;
+}
+
+/* ════════════════════════════════════════════════
+   EXPERIMENT PAGES  (pages 4+)
+════════════════════════════════════════════════ */
+.exp-page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink-blue);
+}
+.exp-num-badge {
+  background: var(--ink-blue);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+.exp-title-big {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink-blue);
+  line-height: 1.25;
+}
+
+.aim-block {
+  background: rgba(26,39,68,.06);
+  border-left: 3px solid var(--ink-blue);
+  padding: 12px 18px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 20px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.aim-block strong {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-blue);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Split screen */
+.split-screen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+.split-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pane-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pane-label .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.code-pane .pane-label {
+  background: #161b22;
+  color: #7c3aed;
+  border: 1px solid #2d2b5a;
+  border-bottom: none;
+}
+.code-pane .pane-label .dot { background: #7c3aed; }
+.output-pane .pane-label {
+  background: #0d1a10;
+  color: #39c46f;
+  border: 1px solid #1a3a25;
+  border-bottom: none;
+}
+.output-pane .pane-label .dot { background: #39c46f; }
+
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid #21262d;
+  border-radius: 0 6px 6px 6px;
+  padding: 16px;
+  overflow-x: auto;
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .78rem;
+  line-height: 1.75;
+  color: #c9d1d9;
+  white-space: pre;
+  min-height: 180px;
+}
+/* syntax */
+.kw  { color: #ff7b72; font-weight:600; }
+.fn  { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.num { color: #f8c555; }
+.cmt { color: #768390; font-style:italic; }
+.op  { color: #ff7b72; }
+.bi  { color: #79c0ff; }
+.cmd { color: #f0c060; }
+
+.output-terminal {
+  background: var(--terminal);
+  border: 1px solid #1a3a25;
+  border-radius: 0 6px 6px 6px;
+  padding: 16px;
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .78rem;
+  line-height: 1.75;
+  color: var(--term-green);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  min-height: 180px;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+}
+.output-placeholder-text {
+  color: var(--term-dim);
+  opacity: .5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  justify-content: center;
+}
+.term-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--term-green);
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Run button */
+.run-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #166534, #15803d);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  padding: 9px 22px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, background .2s;
+  box-shadow: 0 0 20px rgba(21,128,61,.25);
+}
+.run-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(21,128,61,.4); }
+.run-btn:active { transform: scale(.96); }
+.run-btn.done  { background: linear-gradient(135deg, #1a4d2e, #166534); }
+.run-btn svg { width: 13px; height: 13px; }
+
+.result-block {
+  background: rgba(26,74,46,.15);
+  border: 1px solid rgba(26,74,46,.3);
+  border-left: 3px solid #15803d;
+  border-radius: 0 4px 4px 0;
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem;
+  color: #15803d;
+  letter-spacing: .06em;
+}
+
+/* Typing animation */
+@keyframes typeChar {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+.typing {
+  overflow: hidden;
+  animation: revealOutput .8s ease forwards;
+}
+@keyframes revealOutput {
+  from { opacity:0; transform: translateY(4px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════
+   BACK COVER  (last page)
+════════════════════════════════════════════════ */
+#page-back {
+  background: var(--cover-bg);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 50% 100%, #16305a 0%, transparent 60%);
+}
+#page-back::before, #page-back::after { display:none; }
+
+.back-cover-body {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 60px;
+  text-align: center;
+  gap: 0;
+}
+
+.back-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-style: italic;
+  color: rgba(255,255,255,.7);
+  line-height: 1.5;
+  max-width: 580px;
+  margin-bottom: 20px;
+  position: relative;
+  padding: 0 30px;
+}
+.back-quote::before {
+  content: '"';
+  position: absolute;
+  left: -10px; top: -20px;
+  font-size: 5rem;
+  color: rgba(201,168,76,.18);
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.back-quote-attr {
+  font-family: 'Crimson Pro', serif;
+  font-size: .9rem;
+  color: rgba(201,168,76,.5);
+  letter-spacing: .06em;
+  margin-bottom: 52px;
+}
+
+.back-divider {
+  width: 80px; height: 1px;
+  background: rgba(201,168,76,.2);
+  margin-bottom: 52px;
+}
+
+.back-invite {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: rgba(201,168,76,.6);
+  letter-spacing: .08em;
+  margin-bottom: 36px;
+}
+
+.back-inst-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(201,168,76,.8);
+  margin-bottom: 8px;
+}
+.back-inst-addr {
+  font-family: 'Crimson Pro', serif;
+  font-size: .9rem;
+  color: rgba(255,255,255,.35);
+  line-height: 1.7;
+}
+
+/* loading dots */
+.dots span {
+  animation: dotBlink 1.2s ease-in-out infinite;
+  display: inline-block;
+}
+.dots span:nth-child(2){ animation-delay:.2s; }
+.dots span:nth-child(3){ animation-delay:.4s; }
+@keyframes dotBlink {
+  0%,80%,100%{ opacity:.2; } 40%{ opacity:1; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--paper-line); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-light); }
+
+@media (max-width: 700px) {
+  #desk {
+    padding: 10px;
+    padding-bottom: 80px; /* Space for TOC pills on mobile */
+  }
+  .page {
+    height: auto;
+    min-height: calc(100vh - 120px);
+    border-radius: 12px;
+  }
+  .split-screen { 
+    grid-template-columns: 1fr; 
+    gap: 16px;
+  }
+  .page-content { 
+    padding: 24px 16px 24px 34px !important; 
+  }
+  .page::after { 
+    left: 24px; 
+  }
+  .page-holes { 
+    width: 20px; 
+  }
+  .hole { 
+    width: 10px; 
+    height: 10px; 
+  }
+  
+  /* Shrink Cover Page items */
+  .cover-body { padding: 30px 15px; }
+  .cover-title-main { font-size: 11vw; }
+  .cover-meta-row { flex-direction: column; gap: 12px; text-align: center; }
+  
+  /* Shrink Inner Fonts & Tables */
+  .page-heading { font-size: 1.25rem; margin-bottom: 20px; }
+  .aim-text { font-size: 0.85rem; padding: 12px; }
+  .record-table { width: 100%; display: block; overflow-x: auto; }
+  .record-table tr td { padding: 10px 8px; font-size: 0.95rem; }
+  .record-table tr td:first-child { width: 120px; font-size: 0.8rem; }
+  .record-value-large { font-size: 1.05rem; }
+  
+  .index-table, .index-table tbody, .index-table tr, .index-table th, .index-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .index-table thead { display: none; }
+  .index-table tr { margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--paper-line); }
+  .index-table td { border: none !important; padding: 5px !important; text-align: left !important; }
+  .index-table td:nth-child(1) { font-size: 0.8rem; color: var(--ink-light); }
+  .index-table td:nth-child(2) { font-weight: 600; font-size: 1.1rem; }
+  .index-table td:nth-child(3) { display: inline-block; font-size: 0.75rem; padding: 2px 8px; background: rgba(201,168,76,0.15); border-radius: 10px; margin-top: 5px; }
+  
+  .code-block, .output-terminal { 
+    padding: 12px; 
+    font-size: 0.72rem; 
+    min-height: 200px;
+    overflow-x: auto;
+  }
+  
+  .seal-row { flex-direction: column; gap: 30px; }
+  
+  .run-row { flex-direction: column; align-items: stretch; gap: 15px; }
+  .run-btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="desk">
+
+  <!-- NAV BAR -->
+  <div id="nav-bar">
+    <button class="nav-btn" id="btn-prev" onclick="flipPage(-1)" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+      prev
+    </button>
+    <span id="page-indicator">— Cover —</span>
+    <button class="nav-btn" id="btn-next" onclick="flipPage(1)">
+      next
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <!-- BOOK -->
+  <div id="book-wrap">
+    <div id="book">
+
+      <!-- ═══ PAGE 0 · FRONT COVER ═══ -->
+      <div class="page active" id="page-cover" data-label="Cover">
+        <div class="cover-grid"></div>
+        <div class="cover-border"></div>
+        <div class="cover-border-inner"></div>
+        <div class="cover-orb cover-orb1"></div>
+        <div class="cover-orb cover-orb2"></div>
+
+        <div class="cover-body">
+          <div class="cover-crest">🎓</div>
+
+          <div class="cover-institution">Gulzar Group of Institutions</div>
+          <div class="cover-url">www.ggi.ac.in</div>
+
+          <div class="cover-divider"></div>
+
+          <div class="cover-title-main">Practical</div>
+          <div class="cover-title-main" style="font-style:normal;font-size:clamp(1.6rem,4vw,3rem);margin-bottom:4px;">File</div>
+          <div class="cover-title-sub">Python Programming · VAC26601</div>
+
+          <div class="cover-meta-row">
+            <div class="cover-meta-item">
+              <div class="cover-meta-label">Student</div>
+              <div class="cover-meta-value">Inayat Hussain</div>
+            </div>
+            <div class="cover-meta-item">
+              <div class="cover-meta-label">Roll No.</div>
+              <div class="cover-meta-value">2320708</div>
+            </div>
+            <div class="cover-meta-item">
+              <div class="cover-meta-label">Session</div>
+              <div class="cover-meta-value">2025–2026</div>
+            </div>
+          </div>
+
+          <button class="cover-open-btn" onclick="flipPage(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            Open Practical File
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ PAGE 1 · NAME PAGE ═══ -->
+      <div class="page" id="page-name" data-label="Name Page">
+        <div class="page-holes"><div class="hole"></div><div class="hole"></div><div class="hole"></div></div>
+        <div class="page-content">
+          <div class="name-page-header">
+            <h1>Gulzar Group of Institutions</h1>
+            <small>Grand Trunk Road Libra, Khanna, Punjab 141412 · www.ggi.ac.in</small>
+          </div>
+
+          <table class="record-table">
+            <tr>
+              <td>Session</td>
+              <td class="record-value-large">2025 – 2026</td>
+            </tr>
+            <tr>
+              <td>Student Name</td>
+              <td class="record-value-large">Inayat Hussain</td>
+            </tr>
+            <tr>
+              <td>Roll Number</td>
+              <td class="record-value-large">2320708</td>
+            </tr>
+            <tr>
+              <td>Branch</td>
+              <td>B.Tech CSE Data Science</td>
+            </tr>
+            <tr>
+              <td>Semester</td>
+              <td>6th Semester (January – June 2026)</td>
+            </tr>
+            <tr>
+              <td>Subject Code</td>
+              <td>VAC26601</td>
+            </tr>
+            <tr>
+              <td>Subject Name</td>
+              <td>Python Programming</td>
+            </tr>
+            <tr>
+              <td>Faculty</td>
+              <td>Mr. Shashank Jha&ensp;<small style="font-family:'Crimson Pro',serif;font-size:.9rem;color:var(--ink-light)">(Assistant Professor)</small></td>
+            </tr>
+          </table>
+
+          <div class="seal-row">
+            <div class="seal-block">
+              <div class="seal-line"></div>
+              <div class="seal-label">Student Signature</div>
+            </div>
+            <div class="seal-block" style="text-align:center">
+              <div style="font-size:2.5rem;opacity:.15">🔆</div>
+              <div class="seal-label">Institution Seal</div>
+            </div>
+            <div class="seal-block">
+              <div class="seal-line"></div>
+              <div class="seal-label">Faculty Signature</div>
+            </div>
+          </div>
+        </div>
+        <div class="page-num-left">Page I</div>
+        <div class="corner-fold" onclick="flipPage(1)"></div>
+      </div>
+
+      <!-- ═══ PAGE 2 · INDEX ═══ -->
+      <div class="page" id="page-index" data-label="Index">
+        <div class="page-holes"><div class="hole"></div><div class="hole"></div><div class="hole"></div></div>
+        <div class="page-content">
+          <div class="page-heading">
+            List of Experiments
+            <small>VAC26601</small>
+          </div>
+
+          <table class="index-table">
+            <thead>
+              <tr>
+                <th>S.No.</th>
+                <th>Experiment Title</th>
+                <th>Page</th>
+              </tr>
+            </thead>
+            <tbody id="index-body"></tbody>
+          </table>
+        </div>
+        <div class="page-num">Page II</div>
+        <div class="corner-fold" onclick="flipPage(1)"></div>
+      </div>
+
+      <!-- ═══ PAGE 3 · PYTHON OVERVIEW ═══ -->
+      <div class="page" id="page-overview" data-label="Python Overview">
+        <div class="page-holes"><div class="hole"></div><div class="hole"></div><div class="hole"></div></div>
+        <div class="page-content">
+          <div class="page-heading">
+            Python — Overview
+            <small>Introduction</small>
+          </div>
+
+          <div class="overview-section">
+            <h3>Definition</h3>
+            <p>Python is a high-level, interpreted, general-purpose programming language created by <em>Guido van Rossum</em> and first released in 1991. It emphasizes code readability and uses significant indentation to structure programs. Python supports multiple programming paradigms, including procedural, object-oriented, and functional programming.</p>
+          </div>
+
+          <div class="overview-section">
+            <h3>Key Features</h3>
+            <div class="feature-grid">
+              <div class="feature-chip">Simple & Readable Syntax</div>
+              <div class="feature-chip">Interpreted Language</div>
+              <div class="feature-chip">Dynamically Typed</div>
+              <div class="feature-chip">Platform Independent</div>
+              <div class="feature-chip">Rich Standard Library</div>
+              <div class="feature-chip">Open Source & Free</div>
+              <div class="feature-chip">Extensible (C/C++)</div>
+              <div class="feature-chip">Large Community Support</div>
+              <div class="feature-chip">Object-Oriented</div>
+              <div class="feature-chip">Functional Programming</div>
+            </div>
+          </div>
+
+          <div class="overview-section">
+            <h3>Applications</h3>
+            <ul>
+              <li><strong>Web Development</strong> — Django, Flask, FastAPI</li>
+              <li><strong>Data Science &amp; Machine Learning</strong> — NumPy, Pandas, Scikit-learn, TensorFlow</li>
+              <li><strong>Automation &amp; Scripting</strong> — System administration, task automation</li>
+              <li><strong>Scientific Computing</strong> — SciPy, Matplotlib, SymPy</li>
+              <li><strong>Artificial Intelligence</strong> — Natural language processing, computer vision</li>
+              <li><strong>Desktop Applications</strong> — Tkinter, PyQt</li>
+              <li><strong>Network &amp; Cybersecurity</strong> — Socket programming, penetration testing</li>
+            </ul>
+          </div>
+        </div>
+        <div class="page-num-left">Page III</div>
+        <div class="corner-fold" onclick="flipPage(1)"></div>
+      </div>
+
+      <!-- ═══ EXPERIMENT PAGES (dynamically inserted) ═══ -->
+      <div id="exp-pages"></div>
+
+    </div><!-- #book -->
+  </div><!-- #book-wrap -->
+
+  <!-- TOC PILLS -->
+  <div id="toc-nav"></div>
+
+</div><!-- #desk -->
+
+<!-- Audio context for page-turn sound -->
+<script>
+/* ════════════════════════════════════════════════
+   EXPERIMENT DATA
+════════════════════════════════════════════════ */
+const experiments = [
+  {
+    num:"01", title:"Install Python and Verify Installation",
+    aim:"To install the Python interpreter and configure the development environment, then verify the installation by checking the version.",
+    code:`<span class="cmt"># Step 1: Verify Python installation</span>
+<span class="cmd">python --version</span>
+
+<span class="cmt"># Step 2: Check pip package manager version</span>
+<span class="cmd">pip --version</span>
+
+<span class="cmt"># Step 3: Launch Python interactive shell</span>
+<span class="cmd">python</span>`,
+    output:`Python 3.11.2
+pip 23.0.1 from C:\\Python311\\lib\\site-packages\\pip (python 3.11)
+Python 3.11.2 (tags/v3.11.2:878ead1, Feb  8 2023, 10:56:36) on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>>`,
+    result:"Python 3.11.2 installed and verified successfully."
+  },
+  {
+    num:"02", title:"Print Welcome Message",
+    aim:"To understand the use of comments, indentation, and the print() function in Python by displaying a welcome message.",
+    code:`<span class="cmt"># Program to display a welcome message</span>
+<span class="cmt"># This demonstrates basic print statements and comments</span>
+
+<span class="bi">print</span>(<span class="str">"Welcome to Gulzar Group of Institutions"</span>)
+<span class="bi">print</span>(<span class="str">"Python Programming Lab — VAC26601"</span>)
+<span class="bi">print</span>(<span class="str">"Session: 2025-2026"</span>)`,
+    output:`Welcome to Gulzar Group of Institutions
+Python Programming Lab — VAC26601
+Session: 2025-2026`,
+    result:"Welcome message displayed successfully using print() function."
+  },
+  {
+    num:"03", title:"Personalized Greeting Program",
+    aim:"To learn how to accept user input using the input() function and display a personalized greeting message.",
+    code:`<span class="cmt"># Program to accept user name and display a greeting</span>
+
+name <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Enter your name: "</span>)
+<span class="bi">print</span>(<span class="str">"Hello,"</span>, name, <span class="str">"! Welcome to Python."</span>)
+<span class="bi">print</span>(<span class="str">f"Keep learning, {name}!"</span>)`,
+    output:`Enter your name: Inayat
+Hello, Inayat ! Welcome to Python.
+Keep learning, Inayat!`,
+    result:"User input accepted and personalized greeting displayed successfully."
+  },
+  {
+    num:"04", title:"Identify and Correct Errors",
+    aim:"To understand common Python errors — SyntaxError, IndentationError — and learn how to identify and correct them.",
+    code:`<span class="cmt"># BEFORE correction (errors present):</span>
+<span class="cmt"># print "Hello"           → SyntaxError (Python 2 syntax)</span>
+<span class="cmt"># if True:               → IndentationError below</span>
+<span class="cmt"># print("Indented")      → missing indent</span>
+
+<span class="cmt"># CORRECTED program:</span>
+<span class="bi">print</span>(<span class="str">"Hello, Python 3!"</span>)
+
+<span class="kw">if</span> <span class="bi">True</span>:
+    <span class="bi">print</span>(<span class="str">"Indentation is correct."</span>)
+    <span class="bi">print</span>(<span class="str">"Program Corrected Successfully."</span>)`,
+    output:`Hello, Python 3!
+Indentation is correct.
+Program Corrected Successfully.`,
+    result:"Syntax and indentation errors identified and corrected successfully."
+  },
+  {
+    num:"05", title:"Largest of Three Numbers",
+    aim:"To implement conditional statements using if-elif-else to find the largest among three inputted numbers.",
+    code:`<span class="cmt"># Find the largest of three numbers using if-elif-else</span>
+
+a <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter first number:  "</span>))
+b <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter second number: "</span>))
+c <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter third number:  "</span>))
+
+<span class="kw">if</span> a <span class="op">>=</span> b <span class="kw">and</span> a <span class="op">>=</span> c:
+    <span class="bi">print</span>(<span class="str">"Largest number is:"</span>, a)
+<span class="kw">elif</span> b <span class="op">>=</span> c:
+    <span class="bi">print</span>(<span class="str">"Largest number is:"</span>, b)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="str">"Largest number is:"</span>, c)`,
+    output:`Enter first number:  5
+Enter second number: 9
+Enter third number:  3
+Largest number is: 9`,
+    result:"The largest number (9) among 5, 9, 3 was identified correctly using if-elif-else."
+  },
+  {
+    num:"06", title:"Menu-Driven Calculator",
+    aim:"To implement a menu-driven calculator using if-elif ladder that performs basic arithmetic operations.",
+    code:`<span class="bi">print</span>(<span class="str">"=== Calculator ==="</span>)
+<span class="bi">print</span>(<span class="str">"1. Add   2. Subtract   3. Multiply   4. Divide"</span>)
+
+ch <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Choose operation (1-4): "</span>))
+a  <span class="op">=</span> <span class="bi">float</span>(<span class="bi">input</span>(<span class="str">"Enter first number:   "</span>))
+b  <span class="op">=</span> <span class="bi">float</span>(<span class="bi">input</span>(<span class="str">"Enter second number:  "</span>))
+
+<span class="kw">if</span>   ch <span class="op">==</span> <span class="num">1</span>: <span class="bi">print</span>(<span class="str">f"Result: {a} + {b} = {a + b}"</span>)
+<span class="kw">elif</span> ch <span class="op">==</span> <span class="num">2</span>: <span class="bi">print</span>(<span class="str">f"Result: {a} - {b} = {a - b}"</span>)
+<span class="kw">elif</span> ch <span class="op">==</span> <span class="num">3</span>: <span class="bi">print</span>(<span class="str">f"Result: {a} × {b} = {a * b}"</span>)
+<span class="kw">elif</span> ch <span class="op">==</span> <span class="num">4</span> <span class="kw">and</span> b <span class="op">!=</span> <span class="num">0</span>:
+    <span class="bi">print</span>(<span class="str">f"Result: {a} ÷ {b} = {a / b:.4f}"</span>)
+<span class="kw">else</span>: <span class="bi">print</span>(<span class="str">"Invalid choice or division by zero."</span>)`,
+    output:`=== Calculator ===
+1. Add   2. Subtract   3. Multiply   4. Divide
+Choose operation (1-4): 1
+Enter first number:   10
+Enter second number:  5
+Result: 10.0 + 5.0 = 15.0`,
+    result:"Menu-driven calculator implemented successfully using if-elif ladder."
+  },
+  {
+    num:"07", title:"Fibonacci Series",
+    aim:"To generate a Fibonacci sequence up to N terms using a for loop.",
+    code:`<span class="cmt"># Generate Fibonacci series up to N terms</span>
+
+n <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter number of terms: "</span>))
+a, b <span class="op">=</span> <span class="num">0</span>, <span class="num">1</span>
+
+<span class="bi">print</span>(<span class="str">"Fibonacci Series:"</span>, end<span class="op">=</span><span class="str">" "</span>)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n):
+    <span class="bi">print</span>(a, end<span class="op">=</span><span class="str">" "</span>)
+    a, b <span class="op">=</span> b, a <span class="op">+</span> b
+
+<span class="bi">print</span>()  <span class="cmt"># newline</span>
+<span class="bi">print</span>(<span class="str">f"Generated {n} terms."</span>)`,
+    output:`Enter number of terms: 8
+Fibonacci Series: 0 1 1 2 3 5 8 13
+Generated 8 terms.`,
+    result:"Fibonacci series of 8 terms generated successfully using for loop."
+  },
+  {
+    num:"08", title:"Prime Number Check",
+    aim:"To check whether a given number is prime or not using loops and conditional statements.",
+    code:`<span class="cmt"># Check if a number is prime</span>
+
+num <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter a number: "</span>))
+
+<span class="kw">if</span> num <span class="op">></span> <span class="num">1</span>:
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">2</span>, <span class="bi">int</span>(num <span class="op">**</span> <span class="num">0.5</span>) <span class="op">+</span> <span class="num">1</span>):
+        <span class="kw">if</span> num <span class="op">%</span> i <span class="op">==</span> <span class="num">0</span>:
+            <span class="bi">print</span>(num, <span class="str">"is NOT a prime number."</span>)
+            <span class="kw">break</span>
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(num, <span class="str">"IS a prime number."</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(num, <span class="str">"is NOT a prime number."</span>)`,
+    output:`Enter a number: 17
+17 IS a prime number.`,
+    result:"17 is correctly identified as a prime number."
+  },
+  {
+    num:"09", title:"Simple & Compound Interest",
+    aim:"To calculate Simple Interest (SI) and Compound Interest (CI) using mathematical formulas.",
+    code:`<span class="cmt"># Calculate Simple Interest and Compound Interest</span>
+
+p <span class="op">=</span> <span class="bi">float</span>(<span class="bi">input</span>(<span class="str">"Enter Principal (₹): "</span>))
+r <span class="op">=</span> <span class="bi">float</span>(<span class="bi">input</span>(<span class="str">"Enter Rate (%):       "</span>))
+t <span class="op">=</span> <span class="bi">float</span>(<span class="bi">input</span>(<span class="str">"Enter Time (years):   "</span>))
+
+si  <span class="op">=</span> (p <span class="op">*</span> r <span class="op">*</span> t) <span class="op">/</span> <span class="num">100</span>
+ci  <span class="op">=</span> p <span class="op">*</span> ((<span class="num">1</span> <span class="op">+</span> r <span class="op">/</span> <span class="num">100</span>) <span class="op">**</span> t) <span class="op">-</span> p
+
+<span class="bi">print</span>(<span class="str">f"\nSimple Interest   : ₹{si:.2f}"</span>)
+<span class="bi">print</span>(<span class="str">f"Compound Interest : ₹{ci:.2f}"</span>)`,
+    output:`Enter Principal (₹): 1000
+Enter Rate (%):       5
+Enter Time (years):   3
+
+Simple Interest   : ₹150.00
+Compound Interest : ₹157.63`,
+    result:"SI = ₹150.00 and CI = ₹157.63 calculated correctly for P=1000, R=5%, T=3 years."
+  },
+  {
+    num:"10", title:"CRUD Operations on List",
+    aim:"To perform Create, Read, Update, and Delete (CRUD) operations on a Python list representing student marks.",
+    code:`<span class="cmt"># CRUD operations on a student marks list</span>
+
+marks <span class="op">=</span> [<span class="num">80</span>, <span class="num">70</span>, <span class="num">90</span>]    <span class="cmt"># Create</span>
+<span class="bi">print</span>(<span class="str">"Initial List :"</span>, marks)   <span class="cmt"># Read</span>
+
+marks.<span class="fn">append</span>(<span class="num">85</span>)             <span class="cmt"># Create — Add</span>
+marks[<span class="num">1</span>] <span class="op">=</span> <span class="num">75</span>                 <span class="cmt"># Update</span>
+marks.<span class="fn">remove</span>(<span class="num">90</span>)             <span class="cmt"># Delete</span>
+
+<span class="bi">print</span>(<span class="str">"After CRUD  :"</span>, marks)
+<span class="bi">print</span>(<span class="str">"Length      :"</span>, <span class="bi">len</span>(marks))
+<span class="bi">print</span>(<span class="str">"Max Mark    :"</span>, <span class="bi">max</span>(marks))`,
+    output:`Initial List : [80, 70, 90]
+After CRUD  : [80, 75, 85]
+Length      : 3
+Max Mark    : 85`,
+    result:"CRUD operations performed successfully on the student marks list."
+  },
+  {
+    num:"11", title:"Employee Dictionary",
+    aim:"To create a dictionary storing employee details such as ID, Name, and Salary, and to access individual fields.",
+    code:`<span class="cmt"># Create employee dictionary</span>
+
+emp <span class="op">=</span> {
+    <span class="str">"ID"</span>:     <span class="num">101</span>,
+    <span class="str">"Name"</span>:   <span class="str">"Shashank Jha"</span>,
+    <span class="str">"Dept"</span>:   <span class="str">"CSE"</span>,
+    <span class="str">"Salary"</span>: <span class="num">65000</span>
+}
+
+<span class="bi">print</span>(<span class="str">"Employee Record:"</span>, emp)
+<span class="bi">print</span>(<span class="str">"Name:"</span>, emp[<span class="str">"Name"</span>])
+<span class="bi">print</span>(<span class="str">"Salary: ₹"</span>, emp[<span class="str">"Salary"</span>])`,
+    output:`Employee Record: {'ID': 101, 'Name': 'Shashank Jha', 'Dept': 'CSE', 'Salary': 65000}
+Name: Shashank Jha
+Salary: ₹ 65000`,
+    result:"Employee dictionary created and individual fields accessed successfully."
+  },
+  {
+    num:"12", title:"Search Employee by ID",
+    aim:"To search and retrieve employee details using their Employee ID from a dictionary.",
+    code:`<span class="cmt"># Search employee by ID</span>
+
+employees <span class="op">=</span> {
+    <span class="num">101</span>: {<span class="str">"Name"</span>: <span class="str">"Rahul"</span>, <span class="str">"Salary"</span>: <span class="num">50000</span>},
+    <span class="num">102</span>: {<span class="str">"Name"</span>: <span class="str">"Aman"</span>,  <span class="str">"Salary"</span>: <span class="num">45000</span>},
+    <span class="num">103</span>: {<span class="str">"Name"</span>: <span class="str">"Neha"</span>,  <span class="str">"Salary"</span>: <span class="num">55000</span>},
+}
+
+eid <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter Employee ID: "</span>))
+rec <span class="op">=</span> employees.<span class="fn">get</span>(eid)
+
+<span class="kw">if</span> rec:
+    <span class="bi">print</span>(<span class="str">f"Name: {rec['Name']}, Salary: ₹{rec['Salary']}"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="str">"Employee not found."</span>)`,
+    output:`Enter Employee ID: 102
+Name: Aman, Salary: ₹45000`,
+    result:"Employee with ID 102 found and details displayed successfully."
+  },
+  {
+    num:"13", title:"Sort Employees by Salary",
+    aim:"To sort employee records in ascending and descending order based on their salary using lambda functions.",
+    code:`<span class="cmt"># Sort employees by salary using lambda</span>
+
+emp <span class="op">=</span> {
+    <span class="str">"Rahul"</span>: <span class="num">50000</span>,
+    <span class="str">"Aman"</span>:  <span class="num">40000</span>,
+    <span class="str">"Neha"</span>:  <span class="num">60000</span>,
+    <span class="str">"Priya"</span>: <span class="num">55000</span>,
+}
+
+asc  <span class="op">=</span> <span class="bi">sorted</span>(emp.<span class="fn">items</span>(), key<span class="op">=</span><span class="kw">lambda</span> x: x[<span class="num">1</span>])
+desc <span class="op">=</span> <span class="bi">sorted</span>(emp.<span class="fn">items</span>(), key<span class="op">=</span><span class="kw">lambda</span> x: x[<span class="num">1</span>], reverse<span class="op">=</span><span class="bi">True</span>)
+
+<span class="bi">print</span>(<span class="str">"Ascending  :"</span>)
+<span class="kw">for</span> name, sal <span class="kw">in</span> asc: <span class="bi">print</span>(<span class="str">f"  {name:<8} ₹{sal}"</span>)`,
+    output:`Ascending  :
+  Aman     ₹40000
+  Rahul    ₹50000
+  Priya    ₹55000
+  Neha     ₹60000`,
+    result:"Employees sorted by salary in ascending order successfully using lambda."
+  },
+  {
+    num:"14", title:"Remove Duplicates from List",
+    aim:"To remove duplicate elements from a list using Python sets and display the unique elements.",
+    code:`<span class="cmt"># Remove duplicates using set</span>
+
+lst <span class="op">=</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>]
+<span class="bi">print</span>(<span class="str">"Original List    :"</span>, lst)
+<span class="bi">print</span>(<span class="str">"Length (with dup):"</span>, <span class="bi">len</span>(lst))
+
+unique <span class="op">=</span> <span class="bi">sorted</span>(<span class="bi">set</span>(lst))
+<span class="bi">print</span>(<span class="str">"Unique List      :"</span>, unique)
+<span class="bi">print</span>(<span class="str">"Length (unique)  :"</span>, <span class="bi">len</span>(unique))`,
+    output:`Original List    : [1, 2, 2, 3, 4, 4, 5, 1, 3]
+Length (with dup): 9
+Unique List      : [1, 2, 3, 4, 5]
+Length (unique)  : 5`,
+    result:"Duplicates removed successfully. Unique list contains 5 elements."
+  },
+  {
+    num:"15", title:"Character Counter",
+    aim:"To count the number of vowels, consonants, digits, and special characters in a user-input string.",
+    code:`<span class="cmt"># Count character types in a string</span>
+
+s <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Enter a string: "</span>)
+vowels <span class="op">=</span> consonants <span class="op">=</span> digits <span class="op">=</span> special <span class="op">=</span> <span class="num">0</span>
+
+<span class="kw">for</span> ch <span class="kw">in</span> s:
+    <span class="kw">if</span>   ch.<span class="fn">lower</span>() <span class="kw">in</span> <span class="str">'aeiou'</span>: vowels    <span class="op">+=</span> <span class="num">1</span>
+    <span class="kw">elif</span> ch.<span class="fn">isalpha</span>():            consonants <span class="op">+=</span> <span class="num">1</span>
+    <span class="kw">elif</span> ch.<span class="fn">isdigit</span>():            digits     <span class="op">+=</span> <span class="num">1</span>
+    <span class="kw">else</span>:                         special    <span class="op">+=</span> <span class="num">1</span>
+
+<span class="bi">print</span>(<span class="str">f"Vowels    : {vowels}"</span>)
+<span class="bi">print</span>(<span class="str">f"Consonants: {consonants}"</span>)
+<span class="bi">print</span>(<span class="str">f"Digits    : {digits}"</span>)
+<span class="bi">print</span>(<span class="str">f"Special   : {special}"</span>)`,
+    output:`Enter a string: Hello World! 123
+Vowels    : 3
+Consonants: 7
+Digits    : 3
+Special   : 3`,
+    result:"Character classification completed. Vowels=3, Consonants=7, Digits=3, Special=3."
+  },
+  {
+    num:"16", title:"File Copy Program",
+    aim:"To copy the content from one text file to another using Python's file handling operations.",
+    code:`<span class="cmt"># Copy content from source.txt to dest.txt</span>
+
+src  <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Source filename : "</span>)
+dest <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Destination file: "</span>)
+
+<span class="kw">try</span>:
+    <span class="kw">with</span> <span class="bi">open</span>(src) <span class="kw">as</span> f1, <span class="bi">open</span>(dest, <span class="str">"w"</span>) <span class="kw">as</span> f2:
+        content <span class="op">=</span> f1.<span class="fn">read</span>()
+        f2.<span class="fn">write</span>(content)
+    <span class="bi">print</span>(<span class="str">f"✔ File '{src}' copied to '{dest}' successfully!"</span>)
+    <span class="bi">print</span>(<span class="str">f"  Characters copied: {len(content)}"</span>)
+<span class="kw">except</span> FileNotFoundError:
+    <span class="bi">print</span>(<span class="str">"Error: Source file not found."</span>)`,
+    output:`Source filename : a.txt
+Destination file: b.txt
+✔ File 'a.txt' copied to 'b.txt' successfully!
+  Characters copied: 284`,
+    result:"File copied successfully. 284 characters transferred from a.txt to b.txt."
+  },
+  {
+    num:"17", title:"Division Exception Handling",
+    aim:"To demonstrate exception handling in Python using try-except-finally blocks for ZeroDivisionError.",
+    code:`<span class="cmt"># Exception handling — ZeroDivisionError</span>
+
+<span class="kw">try</span>:
+    a <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter numerator  : "</span>))
+    b <span class="op">=</span> <span class="bi">int</span>(<span class="bi">input</span>(<span class="str">"Enter denominator: "</span>))
+    result <span class="op">=</span> a <span class="op">/</span> b
+    <span class="bi">print</span>(<span class="str">f"Result : {a} ÷ {b} = {result:.4f}"</span>)
+<span class="kw">except</span> ZeroDivisionError:
+    <span class="bi">print</span>(<span class="str">"Error : Cannot divide by zero!"</span>)
+<span class="kw">except</span> ValueError:
+    <span class="bi">print</span>(<span class="str">"Error : Please enter valid integers."</span>)
+<span class="kw">finally</span>:
+    <span class="bi">print</span>(<span class="str">"Program execution complete."</span>)`,
+    output:`Enter numerator  : 10
+Enter denominator: 0
+Error : Cannot divide by zero!
+Program execution complete.`,
+    result:"ZeroDivisionError caught and handled gracefully using try-except-finally."
+  },
+  {
+    num:"18", title:"Count Lines and Words in File",
+    aim:"To read a text file and count the total number of lines, words, and characters present in it.",
+    code:`<span class="cmt"># Count lines, words, and characters in a file</span>
+
+filename <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Enter filename: "</span>)
+
+<span class="kw">with</span> <span class="bi">open</span>(filename) <span class="kw">as</span> f:
+    data <span class="op">=</span> f.<span class="fn">read</span>()
+
+lines <span class="op">=</span> data.<span class="fn">count</span>(<span class="str">"\n"</span>) <span class="op">+</span> <span class="num">1</span>
+words <span class="op">=</span> <span class="bi">len</span>(data.<span class="fn">split</span>())
+chars <span class="op">=</span> <span class="bi">len</span>(data)
+
+<span class="bi">print</span>(<span class="str">f"Lines      : {lines}"</span>)
+<span class="bi">print</span>(<span class="str">f"Words      : {words}"</span>)
+<span class="bi">print</span>(<span class="str">f"Characters : {chars}"</span>)`,
+    output:`Enter filename: sample.txt
+Lines      : 5
+Words      : 42
+Characters : 230`,
+    result:"File read successfully. Found 5 lines, 42 words, and 230 characters."
+  },
+  {
+    num:"19", title:"Log File Writer",
+    aim:"To create a simple log file writer that appends timestamped entries to a log file using Python file handling.",
+    code:`<span class="kw">import</span> datetime
+
+<span class="cmt"># Log file writer with timestamp</span>
+
+log_file <span class="op">=</span> <span class="str">"app.log"</span>
+
+<span class="kw">with</span> <span class="bi">open</span>(log_file, <span class="str">"a"</span>) <span class="kw">as</span> f:
+    msg <span class="op">=</span> <span class="bi">input</span>(<span class="str">"Enter log message: "</span>)
+    ts  <span class="op">=</span> datetime.<span class="fn">datetime</span>.<span class="fn">now</span>().<span class="fn">strftime</span>(<span class="str">"%Y-%m-%d %H:%M:%S"</span>)
+    entry <span class="op">=</span> <span class="str">f"[{ts}] {msg}\n"</span>
+    f.<span class="fn">write</span>(entry)
+
+<span class="bi">print</span>(<span class="str">f"✔ Log saved: {entry.strip()}"</span>)`,
+    output:`Enter log message: System started
+✔ Log saved: [2026-04-17 09:00:00] System started`,
+    result:"Log entry with timestamp written to app.log successfully."
+  },
+  {
+    num:"20", title:"Python Virtual Environment",
+    aim:"To create, activate, and deactivate a Python virtual environment using the venv module.",
+    code:`<span class="cmt"># Step 1: Create virtual environment</span>
+<span class="cmd">python -m venv myenv</span>
+
+<span class="cmt"># Step 2: Activate on Windows</span>
+<span class="cmd">myenv\Scripts\activate</span>
+
+<span class="cmt"># Step 3: Activate on Linux / macOS</span>
+<span class="cmd">source myenv/bin/activate</span>
+
+<span class="cmt"># Step 4: Check Python inside venv</span>
+<span class="cmd">python --version</span>
+
+<span class="cmt"># Step 5: Deactivate</span>
+<span class="cmd">deactivate</span>`,
+    output:`(myenv) C:\Users\Abhishek> python --version
+Python 3.11.2
+(myenv) C:\Users\Abhishek> deactivate
+C:\Users\Abhishek>`,
+    result:"Python virtual environment 'myenv' created, activated, and deactivated successfully."
+  },
+  {
+    num:"21", title:"Install NumPy, Pandas, Matplotlib",
+    aim:"To install essential data science libraries (NumPy, Pandas, Matplotlib) using pip and verify their installation.",
+    code:`<span class="cmt"># Install data science libraries</span>
+<span class="cmd">pip install numpy pandas matplotlib</span>
+
+<span class="cmt"># Verify installation</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> matplotlib
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="bi">print</span>(<span class="str">"NumPy     :"</span>, np.__version__)
+<span class="bi">print</span>(<span class="str">"Pandas    :"</span>, pd.__version__)
+<span class="bi">print</span>(<span class="str">"Matplotlib:"</span>, matplotlib.__version__)`,
+    output:`Successfully installed numpy-1.24.2 pandas-2.0.3 matplotlib-3.7.2
+
+NumPy     : 1.24.2
+Pandas    : 2.0.3
+Matplotlib: 3.7.2`,
+    result:"NumPy, Pandas, and Matplotlib installed and imported successfully."
+  },
+  {
+    num:"22", title:"Display All Installed Packages",
+    aim:"To display all installed Python packages with their version numbers using the pkg_resources module.",
+    code:`<span class="kw">import</span> pkg_resources
+
+<span class="cmt"># List all installed packages with versions</span>
+
+installed <span class="op">=</span> [
+    (p.project_name, p.version)
+    <span class="kw">for</span> p <span class="kw">in</span> pkg_resources.<span class="fn">working_set</span>
+]
+
+<span class="bi">print</span>(<span class="str">f"{'Package':<22} {'Version'}"</span>)
+<span class="bi">print</span>(<span class="str">"-" * 34</span>)
+<span class="kw">for</span> name, ver <span class="kw">in</span> <span class="bi">sorted</span>(installed):
+    <span class="bi">print</span>(<span class="str">f"{name:<22} {ver}"</span>)`,
+    output:`Package                Version
+----------------------------------
+Flask                  2.3.2
+matplotlib             3.7.2
+numpy                  1.24.2
+pandas                 2.0.3
+pip                    23.0.1
+Requests               2.31.0
+setuptools             65.5.0
+SQLAlchemy             2.0.20`,
+    result:"All installed packages and their versions displayed successfully using pkg_resources."
+  }
+];
+
+/* ════════════════════════════════════════════════
+   BUILD: Index Table
+════════════════════════════════════════════════ */
+const idxBody = document.getElementById('index-body');
+experiments.forEach((e, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>Exp ${e.num}</td>
+    <td><span class="exp-link" onclick="goToExp(${i})">${e.title}</span></td>
+    <td>${4 + i + 1}</td>`;
+  idxBody.appendChild(tr);
+});
+
+/* ════════════════════════════════════════════════
+   BUILD: Experiment Pages
+════════════════════════════════════════════════ */
+const expContainer = document.getElementById('exp-pages');
+experiments.forEach((e, i) => {
+  const pg = document.createElement('div');
+  pg.className = 'page';
+  pg.id = `page-exp-${i}`;
+  pg.dataset.label = `Exp ${e.num}`;
+
+  pg.innerHTML = `
+    <div class="page-holes"><div class="hole"></div><div class="hole"></div><div class="hole"></div></div>
+    <div class="page-content">
+      <div class="exp-page-header">
+        <div class="exp-num-badge">Experiment ${e.num}</div>
+        <div class="exp-title-big">${e.title}</div>
+      </div>
+      <div class="aim-block">
+        <strong>Aim</strong>
+        ${e.aim}
+      </div>
+      <div class="split-screen">
+        <div class="split-pane code-pane">
+          <div class="pane-label"><span class="dot"></span>Source Code — Python</div>
+          <div class="code-block">${e.code}</div>
+        </div>
+        <div class="split-pane output-pane" id="opane-${i}">
+          <div class="pane-label"><span class="dot"></span>Output — Terminal</div>
+          <div class="output-terminal" id="oterm-${i}">
+            <div class="output-placeholder-text">
+              <span>▶</span><span>Press "Run Code" to execute</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="run-row">
+        <button class="run-btn" id="rbtn-${i}" onclick="runExp(${i})">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Run Code
+        </button>
+        <div class="result-block" id="res-${i}" style="display:none">
+          ✔ ${e.result}
+        </div>
+      </div>
+    </div>
+    <div class="page-num">Exp ${e.num} · Page ${4 + i + 1}</div>
+    <div class="corner-fold" onclick="flipPage(1)"></div>
+  `;
+
+  expContainer.appendChild(pg);
+});
+
+/* ════════════════════════════════════════════════
+   COLLECT ALL PAGES
+════════════════════════════════════════════════ */
+let pages, currentPage = 0;
+
+function collectPages() {
+  pages = Array.from(document.querySelectorAll('.page'));
+}
+collectPages();
+
+/* ════════════════════════════════════════════════
+   TOC PILLS
+════════════════════════════════════════════════ */
+const tocNav = document.getElementById('toc-nav');
+const tocLabels = [
+  { label:'Cover', idx:0 },
+  { label:'Name', idx:1 },
+  { label:'Index', idx:2 },
+  { label:'Overview', idx:3 },
+  ...experiments.map((e,i) => ({ label:`Exp ${e.num}`, idx:4+i }))
+];
+tocLabels.forEach(t => {
+  const pill = document.createElement('button');
+  pill.className = 'toc-pill' + (t.idx===0?' active':'');
+  pill.textContent = t.label;
+  pill.id = `toc-${t.idx}`;
+  pill.onclick = () => goToPage(t.idx);
+  tocNav.appendChild(pill);
+});
+
+function updateTocPills() {
+  document.querySelectorAll('.toc-pill').forEach(p => p.classList.remove('active'));
+  const pill = document.getElementById(`toc-${currentPage}`);
+  if (pill) { pill.classList.add('active'); pill.scrollIntoView({inline:'center',behavior:'smooth'}); }
+}
+
+/* ════════════════════════════════════════════════
+   PAGE NAVIGATION
+════════════════════════════════════════════════ */
+function goToPage(idx) {
+  if (idx === currentPage) return;
+  const dir = idx > currentPage ? 1 : -1;
+  navigateTo(idx, dir);
+}
+
+function flipPage(dir) {
+  const next = currentPage + dir;
+  if (next < 0 || next >= pages.length) return;
+  navigateTo(next, dir);
+}
+
+function navigateTo(next, dir) {
+  playPageSound();
+  const cur = pages[currentPage];
+  const nxt = pages[next];
+
+  const outClass = dir > 0 ? 'slide-out' : 'slide-out-rev';
+  const inClass = dir > 0 ? 'slide-in' : 'slide-in-rev';
+
+  // Animate out
+  cur.classList.add(outClass);
+  setTimeout(() => {
+    cur.classList.remove('active', 'slide-out', 'slide-out-rev');
+    nxt.classList.add('active', inClass);
+    setTimeout(() => nxt.classList.remove('slide-in', 'slide-in-rev'), 360);
+    currentPage = next;
+    updateNav();
+    updateTocPills();
+  }, 300);
+}
+
+function goToExp(i) { goToPage(4 + i); }
+
+function updateNav() {
+  const prev = document.getElementById('btn-prev');
+  const next = document.getElementById('btn-next');
+  const ind  = document.getElementById('page-indicator');
+
+  prev.disabled = currentPage === 0;
+  next.disabled = currentPage === pages.length - 1;
+
+  const lab = pages[currentPage].dataset.label || `Page ${currentPage}`;
+  ind.textContent = `— ${lab} —`;
+}
+updateNav();
+
+/* ════════════════════════════════════════════════
+   RUN EXPERIMENT (simulated)
+════════════════════════════════════════════════ */
+const executed = new Set();
+
+function runExp(idx) {
+  const btn  = document.getElementById(`rbtn-${idx}`);
+  const term = document.getElementById(`oterm-${idx}`);
+  const res  = document.getElementById(`res-${idx}`);
+
+  if (executed.has(idx)) {
+    // Reset
+    term.innerHTML = `<div class="output-placeholder-text"><span>▶</span><span>Press "Run Code" to execute</span></div>`;
+    res.style.display = 'none';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Run Code`;
+    btn.classList.remove('done');
+    executed.delete(idx);
+    return;
+  }
+
+  btn.innerHTML = `<span class="dots">Running<span>.</span><span>.</span><span>.</span></span>`;
+  btn.disabled = true;
+
+  // Simulate delay
+  setTimeout(() => {
+    const output = experiments[idx].output;
+    term.innerHTML = '';
+    typeOutput(term, output, () => {
+      // cursor
+      const cursor = document.createElement('span');
+      cursor.className='term-cursor';
+      term.appendChild(cursor);
+
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Done (Reset)`;
+      btn.classList.add('done');
+      btn.disabled = false;
+      res.style.display = 'block';
+      res.classList.add('typing');
+      executed.add(idx);
+    });
+  }, 700);
+}
+
+function typeOutput(el, text, cb) {
+  const lines = text.split('\n');
+  let li = 0, ci = 0;
+  el.classList.add('typing');
+
+  function tick() {
+    if (li >= lines.length) { cb && cb(); return; }
+    if (ci === 0) {
+      const span = document.createElement('span');
+      span.style.display = 'block';
+      el.appendChild(span);
+    }
+    const curLine = el.lastChild;
+    curLine.textContent += lines[li][ci] || '';
+    ci++;
+    if (ci >= lines[li].length) { li++; ci = 0; setTimeout(tick, 80); }
+    else setTimeout(tick, 22);
+  }
+  tick();
+}
+
+/* ════════════════════════════════════════════════
+   PAGE TURN SOUND (Web Audio API)
+════════════════════════════════════════════════ */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playPageSound() {
+  try {
+    const ctx = getAudioCtx();
+    const dur = 0.28;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      // Two-stage envelope for organic rustle: drag + drop
+      const drag = Math.exp(-Math.pow((t - 0.1) * 8, 2)) * 0.3;
+      const drop = Math.exp(-Math.pow((t - 0.6) * 6, 2)) * 0.8;
+      const env = (drag + drop) * (1 - t);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+    
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    
+    // Filter sweep for realistic muffled paper movement
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 1.2;
+    filter.frequency.setValueAtTime(3000, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + dur);
+    
+    src.connect(filter);
+    filter.connect(ctx.destination);
+    src.start();
+  } catch(e) {}
+}
+
+/* ════════════════════════════════════════════════
+   COVER PARALLAX (mouse move)
+════════════════════════════════════════════════ */
+const coverPage = document.getElementById('page-cover');
+document.addEventListener('mousemove', e => {
+  if (currentPage !== 0) return;
+  const cx = window.innerWidth  / 2;
+  const cy = window.innerHeight / 2;
+  const dx = (e.clientX - cx) / cx;
+  const dy = (e.clientY - cy) / cy;
+  const orb1 = coverPage.querySelector('.cover-orb1');
+  const orb2 = coverPage.querySelector('.cover-orb2');
+  if (orb1) orb1.style.transform = `translate(${dx*18}px,${dy*18}px)`;
+  if (orb2) orb2.style.transform = `translate(${-dx*12}px,${-dy*12}px)`;
+});
+
+/* Keyboard navigation */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') flipPage(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   flipPage(-1);
+});
+
+/* Click navigation */
+document.addEventListener('click', e => {
+  // Ignore clicks if they are on buttons, code blocks, links, or corner folds
+  if (e.target.closest('button, a, pre, code, .corner-fold, .exp-link')) return;
+
+  const cx = window.innerWidth / 2;
+  if (e.clientX > cx) {
+    flipPage(1);
+  } else {
+    flipPage(-1);
+  }
+});
+</script>
+</body>
+</html>
